@@ -28,12 +28,8 @@
     "C001;кредит;Списание;120000;;2026-10-15;;Платеж по кредиту (график банка);100;;;;\n";
 
   // Настройка кнопок скачивания шаблонов для статического хостинга
+// Настройка кнопок скачивания шаблонов для статического хостинга
   window.addEventListener('DOMContentLoaded', () => {
-    //const tOps = document.getElementById('template');
-    //if (tOps) {
-    //  const blob = new Blob(['\ufeff' + TEMPLATE_OPS_CSV], { type: 'text/csv;charset=utf-8' });
-    //  tOps.href = URL.createObjectURL(blob);
-    // }
     const tPlan = document.getElementById('plan-template-link');
     if (tPlan) {
       const blob = new Blob(['\ufeff' + TEMPLATE_PLAN_CSV], { type: 'text/csv;charset=utf-8' });

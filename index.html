@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Куда уходят деньги</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-user="Администратор" data-role="owner">
+
+<header class="topbar">
+  <button type="button" class="top-btn help-btn" id="help-btn" title="Показать короткий обзор сайта"><span class="help-q">?</span><span class="help-text">Как пользоваться сайтом?</span></button>
+
+  <nav class="nav" id="nav" aria-label="Разделы сайта">
+    <button class="nav-btn active" data-nav="0"><i>1</i> Загрузка</button>
+    <button class="nav-btn" data-nav="1" disabled title="Сначала загрузите данные"><i>2</i> Выбор</button>
+    <button class="nav-btn" data-nav="2" disabled title="Сначала загрузите данные"><i>3</i> История</button>
+    <button class="nav-btn" data-nav="3" disabled title="Сначала загрузите данные"><i>4</i> Статистика</button>
+  </nav>
+
+  <div class="top-actions">
+    <span class="who" title="Вы вошли как Администратор">
+      <span class="avatar" id="user-avatar">А</span>
+      <span class="who-name"><span id="user-name">Администратор</span><small>владелец</small></span>
+    </span>
+    <button class="top-btn" id="logout">Сбросить БД</button>
+  </div>
+</header>
+
+<div class="viewport">
+<div class="track" id="track">
+
+  <section class="slide on" id="s-upload">
+    <div class="hero">
+      <div class="hero-text">
+        <p class="eyebrow">Анализ движения денег</p>
+        <h1>Куда уходят деньги</h1>
+        <p class="lead">Загрузите выгрузку операций в CSV — покажем списания, общую картину по счёту и спрогнозируем остаток на 30, 90, 180 дней или на свой срок.</p>
+        <input type="file" id="file" accept=".csv" hidden>
+        <div class="btn-row">
+          <button class="btn primary big" id="pick">Выбрать CSV-файл</button>
+          <a class="btn big" id="template" href="/api/template" download="shablon_operacij.csv">Загрузить шаблон</a>
+          <button class="btn big" id="saved" hidden>Открыть сохранённые данные</button>
+        </div>
+        <p class="hint" id="upload-msg"></p>
+      </div>
+      <ol class="steps">
+        <li><b>1</b><div><strong>Загрузите файл</strong><span>Выгрузка операций из банка или 1С в формате CSV.</span></div></li>
+        <li><b>2</b><div><strong>Выберите компанию</strong><span>И что хотите увидеть: историю или статистику.</span></div></li>
+        <li><b>3</b><div><strong>Смотрите прогноз</strong><span>Хватит ли денег на выбранный срок и что будет, если что-то пойдёт не так.</span></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="slide" id="s-menu">
+    <div class="center wide">
+      <button class="link" data-go="0">← Загрузить другой файл</button>
+      <div class="menu-head">
+        <div>
+          <h2>Что показать?</h2>
+          <p class="lead" id="file-info"></p>
+        </div>
+        <label class="field">Компания
+          <select id="company"></select>
+        </label>
+      </div>
+      <div class="choices">
+        <button class="choice" id="go-history">
+          <span class="choice-top"><em>Таблица</em><i class="choice-go" aria-hidden="true">→</i></span>
+          <b>История списаний</b>
+          <span class="choice-sub">Все расходы с поиском и фильтром по категориям</span>
+          <span class="choice-body">
+            <span class="mini-title">Последние списания</span>
+            <span class="recent" id="mn-recent"></span>
+          </span>
+          <span class="choice-foot" id="mn-hist-foot"></span>
+        </button>
+        <button class="choice" id="go-stats">
+          <span class="choice-top"><em>Графики</em><i class="choice-go" aria-hidden="true">→</i></span>
+          <b>Полная статистика</b>
+          <span class="choice-sub">Диаграммы, динамика остатка и прогноз на 30–365 дней</span>
+          <span class="choice-body">
+            <span class="mini-title">Остаток на счёте</span>
+            <svg class="spark" id="mn-spark" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"></svg>
+            <span class="trio" id="mn-trio"></span>
+          </span>
+          <span class="choice-foot" id="mn-stat-foot"></span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide scroll" id="s-history">
+    <div class="wrap">
+      <button class="link" data-go="1">← Назад</button>
+      <h2>История списаний</h2>
+      <div class="toolbar" id="h-toolbar">
+        <input type="search" id="q" placeholder="Поиск по назначению или ИНН">
+        <select id="cat"><option value="">Все категории</option></select>
+        <span class="sum" id="h-sum"></span>
+      </div>
+      <div class="table-box">
+        <table>
+          <thead><tr><th>Дата</th><th>Контрагент</th><th>Категория</th><th>Назначение платежа</th><th>ИНН</th><th class="num">Сумма</th></tr></thead>
+          <tbody id="h-body"></tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <button class="btn" id="prev">← Назад</button>
+        <span id="page-info"></span>
+        <button class="btn" id="next">Вперёд →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide scroll" id="s-stats">
+    <div class="wrap">
+      <button class="link" data-go="1">← Назад</button>
+      <h2>Полная статистика</h2>
+
+      <div class="panel" id="forecast">
+        <h3 id="f-title">Прогноз на 30 дней</h3>
+        <div class="period" id="period">
+          <span class="period-label">Период прогноза</span>
+          <div class="seg" id="period-seg" role="group" aria-label="Готовые периоды">
+            <button class="seg-btn active" data-days="30">30 дней</button>
+            <button class="seg-btn" data-days="90">90 дней</button>
+            <button class="seg-btn" data-days="180">180 дней</button>
+          </div>
+          <label class="field inline">Свой срок, дней (30–365)
+            <input type="number" id="period-custom" min="30" max="365" step="1" value="30"></label>
+          <button class="btn primary" id="period-apply">Показать</button>
+          <p class="hint">Чем дальше горизонт, тем шире диапазон и ниже точность прогноза.</p>
+        </div>
+        <div id="overdue" class="overdue" hidden></div>
+        <div id="verdict" class="verdict" hidden></div>
+        <canvas id="ch-forecast" class="tall"></canvas>
+        <p class="hint">Линия — ожидаемый остаток. Закрашенная область — диапазон, в который остаток попадёт в 8 случаях из 10.</p>
+
+        <h4>Ближайшие известные платежи</h4>
+        <div class="table-box"><table>
+          <thead><tr><th>Дата</th><th>Что</th><th>Источник</th><th class="num">Сумма</th></tr></thead>
+          <tbody id="f-upcoming"></tbody>
+        </table></div>
+
+        <details class="how"><summary>Как считается прогноз</summary>
+          <ul id="f-notes"></ul>
+          <p>Мы 1000 раз «проигрываем» выбранный период: сроки и суммы платежей слегка меняются, обычные поступления и расходы берутся из реальных дней последних месяцев. Вероятность разрыва — доля сценариев, где денег на счёте не хватает. Это оценка по истории, а не гарантия.</p>
+        </details>
+        <p class="hint err" id="f-msg"></p>
+      </div>
+
+      <div class="panel" id="advice">
+        <h3>Что делать и насколько вы устойчивы</h3>
+        <div id="adv-head" class="verdict" hidden></div>
+        <div id="adv-levers" hidden>
+          <h4>Что поможет — каждая мера проверена той же симуляцией</h4>
+          <div class="table-box"><table>
+            <thead><tr><th>Мера</th><th class="num">Разрыв был</th><th class="num">Станет</th><th>Хватит?</th></tr></thead>
+            <tbody id="adv-body"></tbody>
+          </table></div>
+        </div>
+        <div id="adv-stress" class="cmp" hidden></div>
+        <p class="hint" id="adv-note"></p>
+      </div>
+
+      <div class="panel" id="sources">
+        <h3>Данные для прогноза</h3>
+        <p class="hint">Всё, что вы добавите здесь, сразу попадает в прогноз. Источник каждого события виден в таблице.</p>
+
+        <h4>Добавить событие вручную</h4>
+        <div class="toolbar">
+          <label class="field inline">Дата
+            <input type="date" id="m-date"></label>
+          <label class="field inline">Сумма, ₽
+            <input type="number" id="m-amount" min="0" placeholder="300000"></label>
+          <label class="field inline">Что это
+            <select id="m-dir"><option>Поступление</option><option>Списание</option></select></label>
+          <label class="field inline grow">Описание
+            <input type="text" id="m-desc" placeholder="Клиент обещал заплатить"></label>
+          <button class="btn primary" id="m-add">Добавить</button>
+        </div>
+
+        <h4>Загрузить из файла</h4>
+        <div class="toolbar">
+          <label class="field inline">Откуда файл
+            <select id="p-source"></select></label>
+          <input type="file" id="p-file" accept=".csv" hidden>
+          <button class="btn" id="p-pick">Выбрать CSV</button>
+          <a href="/api/plan/template" id="plan-template-link" download="plan_shablon.csv">Скачать шаблон</a>
+        </div>
+        <p class="hint" id="p-msg"></p>
+
+        <h4>Что уже добавлено</h4>
+        <div class="table-box"><table>
+          <thead><tr><th>Дата</th><th>Что</th><th>Тип</th><th>Источник</th><th class="num">Сумма</th><th></th></tr></thead>
+          <tbody id="p-body"></tbody>
+        </table></div>
+        <p class="hint">Счета, договоры (график платежей, предоплата, отсрочка), налоги, кредиты и зарплатный проект загружаются файлом по шаблону.</p>
+      </div>
+
+      <div class="panel" id="scenarios">
+        <h3>А если что-то пойдёт не так?</h3>
+        <div class="toolbar">
+          <label class="field inline">Крупный клиент заплатит позже
+            <select id="sc-delay"><option value="0">Нет</option><option value="14">на 2 недели</option><option value="21">на 3 недели</option><option value="28">на 4 недели</option></select></label>
+          <label class="field inline">Выручка снизится
+            <select id="sc-drop"><option value="0">Нет</option><option value="10">на 10%</option><option value="20">на 20%</option><option value="30">на 30%</option></select></label>
+          <label class="field inline">Вырастут аренда и закупки
+            <select id="sc-growth"><option value="0">Нет</option><option value="10">на 10%</option><option value="20">на 20%</option><option value="30">на 30%</option></select></label>
+        </div>
+        <div class="toolbar">
+          <label class="field inline">Внеплановый расход, ₽
+            <input type="number" id="sc-extra" min="0" value="0"></label>
+          <label class="field inline">Через сколько дней
+            <input type="number" id="sc-extra-day" min="1" max="30" value="1"></label>
+          <button class="btn primary" id="sc-run">Показать сценарий</button>
+        </div>
+        <div id="sc-result" hidden>
+          <div class="cmp" id="sc-cards"></div>
+          <canvas id="ch-scenario" class="tall"></canvas>
+          <p class="hint" id="sc-note"></p>
+        </div>
+        <p class="hint err" id="sc-msg"></p>
+      </div>
+
+      <div class="panel" id="planfact">
+        <h3>План и факт за последние 4 недели</h3>
+        <p class="hint" id="pf-text"></p>
+        <canvas id="ch-planfact" class="tall"></canvas>
+        <div class="table-box"><table>
+          <thead><tr><th>Неделя</th><th class="num">Поступления: план</th><th class="num">факт</th><th class="num">Списания: план</th><th class="num">факт</th></tr></thead>
+          <tbody id="pf-weeks"></tbody>
+        </table></div>
+        <p class="hint">Красным выделены дни и недели, где факт вышел за пределы ожидаемого диапазона. Переводы между своими счетами не учитываются.</p>
+      </div>
+
+      <div class="kpis" id="kpis"></div>
+
+      <div class="grid2">
+        <div class="panel"><h3>Приход и расход по месяцам</h3><canvas id="ch-monthly"></canvas></div>
+        <div class="panel"><h3>Структура расходов</h3><div class="donut3d" id="ch-out"></div></div>
+      </div>
+      <div class="panel"><h3>Остаток на счёте</h3><canvas id="ch-balance" class="tall"></canvas></div>
+      <div class="grid2 even">
+        <div class="panel"><h3>Структура поступлений</h3><div class="donut3d" id="ch-in"></div></div>
+        <div class="panel"><h3>Кто платит больше всех</h3>
+          <div id="top-payers" class="payers"></div>
+          <p class="hint" id="top-note"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</div>
+
+<!-- обучающий тур -->
+<div id="tour-offer" class="tour-offer" hidden>
+  <div class="tour-offer-card" role="dialog" aria-labelledby="tour-offer-title">
+    <div class="tour-offer-text">
+      <b id="tour-offer-title">Впервые на сайте?</b>
+      <span>Пройдите короткий обзор — за минуту покажем, куда нажимать и что где находится.</span>
+    </div>
+    <div class="tour-offer-btns">
+      <button class="btn light" id="tour-skip">Не сейчас</button>
+      <button class="btn accent" id="tour-start">Пройти обзор →</button>
+    </div>
+  </div>
+</div>
+
+<div id="tour" class="tour" hidden>
+  <div class="tour-hole" id="tour-hole"></div>
+  <div class="tour-card" id="tour-card" role="dialog" aria-live="polite">
+    <div class="tour-count" id="tour-count"></div>
+    <h3 id="tour-title"></h3>
+    <p id="tour-text"></p>
+    <div class="tour-btns">
+      <button class="link" id="tour-close">Закончить</button>
+      <span class="grow-space"></span>
+      <button class="btn" id="tour-prev">← Назад</button>
+      <button class="btn primary" id="tour-next">Далее →</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="backend_shim.js"></script>
+<script src="app.js"></script>
+<script src="tour.js"></script>
+</body>
+</html>
